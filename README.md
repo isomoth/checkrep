@@ -10,32 +10,21 @@ Check reputation for indicators of compromise
 ## Installation
 
 Install this tool using `pip`:
+
 ```bash
 pip install checkrep
 ```
+
 ## Usage
 
 For help, run:
+
 ```bash
 checkrep --help
 ```
+
 You can also use:
+
 ```bash
 python -m checkrep --help
-```
-## Development
-
-To contribute to this tool, first checkout the code. Then create a new virtual environment:
-```bash
-cd checkrep
-python -m venv venv
-source venv/bin/activate
-```
-Now install the dependencies and test dependencies:
-```bash
-pip install -e '.[test]'
-```
-To run the tests:
-```bash
-python -m pytest
 ```

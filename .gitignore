@@ -8,3 +8,4 @@ venv
 *.egg-info
 .DS_Store
 .env
+sample_defender_log.txt

@@ -9,8 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
 SPAMMER_IP_ADDRESS = os.getenv('SPAMMER_IP_ADDRESS')
-IP_ADDRESS_BASE_URL = os.getenv('IP_ADDRESS_BASE_URL')
 LOG_FILE_PATH = os.getenv('LOG_FILE_PATH')
+IP_ADDRESS_BASE_URL = os.getenv('IP_ADDRESS_BASE_URL')
+FILE_PATH_PATTERN = re.compile(r'(?i)^.*\.(txt|json|xml)$')
 IP_PATTERN = re.compile(
     r'((?:\d{1,3}\.){3}\d{1,3})'
 )
@@ -20,12 +21,12 @@ IP_PATTERN = re.compile(
 @click.option('--ioc', prompt='Enter a defanged IP address or log file path')
 def is_ip_malicious(ioc):
     """Basic reputation checker that takes in an IP adress and checks whether it is malicious."""
-    ip = SPAMMER_IP_ADDRESS
-    log_file = LOG_FILE_PATH
-    refanged_ip = ip.translate({ord(i): None for i in "[]"})
+    refanged_ip = ioc.translate({ord(i): None for i in "[]"})
 
-    if ioc == ip:
+    is_ip = IP_PATTERN.match(refanged_ip)
+    is_log_file = FILE_PATH_PATTERN.match(ioc)
 
+    if is_ip:
         ip_request = f"{IP_ADDRESS_BASE_URL}{refanged_ip}"
 
         headers = {
@@ -37,10 +38,10 @@ def is_ip_malicious(ioc):
         url_data = response.json()
         print(json.dumps(url_data, indent=2))
 
-    elif ioc == log_file:
+    elif is_log_file:
         valid_ip_list = []
         with open(
-                log_file, 'r', encoding="utf-8") as file:
+                ioc, 'r', encoding="utf-8") as file:
             for line in file:
                 ip_addresses = IP_PATTERN.findall(line)
                 for ip_address in ip_addresses:
@@ -61,8 +62,6 @@ if __name__ == '__main__':
 # TODO: interview SOC analysts to find out which IoCs are relevant and which data they want to see in the report
 
 # Input
-# TODO: read from user input instead of hard-coded values
-# TODO: receive and read through a text file regardless of its format
 # TODO: exclude private IPs
 # Output
  # TODO: Read up on how to interpret IP VirusTotal report

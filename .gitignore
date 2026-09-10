@@ -9,3 +9,4 @@ venv
 .DS_Store
 .env
 sample_defender_log.txt
+sample_network_log.txt

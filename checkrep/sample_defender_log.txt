@@ -5,6 +5,7 @@
   "process_name": "splunkforwarder.exe",
   "command_line": "System logs collected and forwarded",
   "source_ip": "192.168.223.109",
+  "destination_ip": "192.168.223.101",
   "location": "Remote_VPN",
   "device_type": "mobile",
   "success": "true",

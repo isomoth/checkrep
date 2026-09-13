@@ -48,7 +48,21 @@ def is_ip_malicious(ioc):
                     ip_object = ipaddress.ip_address(ip_address)
                     if not ip_object.is_private or ip_object.is_loopback or ip_object.is_reserved:
                         valid_ip_list.append(ip_object)
-            print("The log contains the following public IP addresses: ", valid_ip_list)
+
+                        for public_ip in valid_ip_list:
+                            public_ip_request = f"{IP_ADDRESS_BASE_URL}{public_ip}"
+                            headers = {
+                                "accept": "application/json",
+                                "x-apikey": API_KEY
+                            }
+
+                            response = requests.get(
+                                public_ip_request, headers=headers)
+                            url_data = response.json()
+
+                        print("Public IP", public_ip, "was reported as malicious by", url_data['data']['attributes']
+                              ['last_analysis_stats']['malicious'], "vendors and suspicious by", url_data['data']['attributes']
+                              ['last_analysis_stats']['suspicious'], "vendors")
 
     else:
         print("Invalid input, try again.")
@@ -62,13 +76,13 @@ if __name__ == '__main__':
 # TODO: interview SOC analysts to find out which IoCs are relevant and which data they want to see in the report
 
 # Output
- # TODO: Read up on how to interpret IP VirusTotal report
+# TODO: make the API request reusable
+# TODO: Read up on how to interpret IP VirusTotal report
     # Example logic:
     # Check attributes.malicious, if count = 0, ip is benign
     # If count = 1, ip should be investigated
     # If count > 5, ip is malicious
 # TODO: exclude benign IPs from output
-# TODO: return malicious and suspicious IPs
 # TODO: logic to find the key-value pair matching the IP category (spammer, phishing, etc.)
 # TODO: logic for receiving other IoCs as input
 # TODO: logic for uploading logs and scanning through IoCs, then returning a threat summary

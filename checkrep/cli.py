@@ -46,9 +46,9 @@ def is_ip_malicious(ioc):
                 ip_addresses = IP_PATTERN.findall(line)
                 for ip_address in ip_addresses:
                     ip_object = ipaddress.ip_address(ip_address)
-                    valid_ip_list.append(ip_object)
-
-            print("The log contains the following IP addresses: ", valid_ip_list)
+                    if not ip_object.is_private or ip_object.is_loopback or ip_object.is_reserved:
+                        valid_ip_list.append(ip_object)
+            print("The log contains the following public IP addresses: ", valid_ip_list)
 
     else:
         print("Invalid input, try again.")
@@ -61,8 +61,6 @@ if __name__ == '__main__':
 # General
 # TODO: interview SOC analysts to find out which IoCs are relevant and which data they want to see in the report
 
-# Input
-# TODO: exclude private IPs
 # Output
  # TODO: Read up on how to interpret IP VirusTotal report
     # Example logic:

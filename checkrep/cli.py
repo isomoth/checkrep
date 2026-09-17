@@ -19,8 +19,9 @@ def check_reputation(ioc: str):
 
     refanged_ioc = ioc.translate({ord(i): None for i in "[]"})
     is_ip = constants.IP_PATTERN.match(refanged_ioc)
-    is_log_file = constants.FILE_PATH_PATTERN.match(ioc)
     is_url = constants.URL_PATTERN.match(refanged_ioc)
+    is_log_file = constants.FILE_PATH_PATTERN.match(ioc)
+    is_hash = constants.HASH_PATTERN.match(ioc)
 
     if is_ip:
         ip_endpoint = f"{constants.BASE_URL}{constants.IP_ADDRESS_ENDPOINT}{refanged_ioc}"
@@ -54,6 +55,11 @@ def check_reputation(ioc: str):
                 public_ip_endpoint)
             utils.print_ioc_summary(
                 "Public IP", public_ip, ips_data)
+
+    elif is_hash:
+        hash_endpoint = f"{constants.BASE_URL}{constants.HASH_ENDPOINT}{ioc}"
+        hash_data = utils.get_virustotal_report(hash_endpoint)
+        utils.print_ioc_summary("File hash", ioc, hash_data)
 
     else:
         print("Invalid input, try again.")

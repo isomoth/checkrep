@@ -17,55 +17,52 @@ load_dotenv()
 def check_reputation(ioc: str):
     """Basic reputation checker for URL, IP, hashes, domains and log files."""
 
-    refanged_ioc = ioc.translate({ord(i): None for i in "[]"})
-    is_ip = constants.IP_PATTERN.match(refanged_ioc)
-    is_url = constants.URL_PATTERN.match(refanged_ioc)
-    is_hash = constants.HASH_PATTERN.match(ioc)
-    is_domain = constants.DOMAIN_PATTERN.match(refanged_ioc)
-    is_log_file = constants.FILE_PATH_PATTERN.match(ioc)
+    refanged_ioc = utils.refang_ioc(ioc)
 
-    if is_ip:
-        ip_endpoint = f"{constants.BASE_URL}{constants.IP_ADDRESS_ENDPOINT}{refanged_ioc}"
-        ip_data = utils.get_virustotal_report(ip_endpoint)
-        utils.print_ioc_summary("Public IP", refanged_ioc, ip_data)
+    # Check for single IoC input first
+    if constants.IP_PATTERN.fullmatch(refanged_ioc):
+        utils.process_single_ioc("Public IP", refanged_ioc)
+    elif constants.URL_PATTERN.fullmatch(refanged_ioc):
+        utils.process_single_ioc("URL", refanged_ioc)
+    elif constants.HASH_PATTERN.fullmatch(ioc):
+        utils.process_single_ioc("File hash", ioc)
+    elif constants.DOMAIN_PATTERN.fullmatch(refanged_ioc):
+        utils.process_single_ioc("Domain", refanged_ioc)
 
-    elif is_url:
-        # VirusTotal API only accepts URL identifiers as SHA-256 (canonized URL) or the string as converted to base64
-        # I've selected base64 as the chosen identifier
-        url_id = base64.urlsafe_b64encode(
-            ioc.encode()).decode().strip("=")
-        url_endpoint = f"{constants.BASE_URL}{constants.URL_ADDRESS_ENDPOINT}{url_id}"
-        url_data = utils.get_virustotal_report(url_endpoint)
-        utils.print_ioc_summary("URL", ioc, url_data)
-
-    elif is_hash:
-        hash_endpoint = f"{constants.BASE_URL}{constants.HASH_ENDPOINT}{ioc}"
-        hash_data = utils.get_virustotal_report(hash_endpoint)
-        utils.print_ioc_summary("File hash", ioc, hash_data)
-
-    elif is_domain:
-        domain_endpoint = f"{constants.BASE_URL}{constants.DOMAIN_ENDPOINT}{ioc}"
-        domain_data = utils.get_virustotal_report(domain_endpoint)
-        utils.print_ioc_summary("Domain", ioc, domain_data)
-
-    elif is_log_file:
-        valid_ip_list = set()
+    # Process input as log file
+    elif constants.FILE_PATH_PATTERN.fullmatch(ioc):
+        # Avoid duplicated API requests for URL/domains by storing IoCs as (type, indicator) tuples
+        found_iocs = set()
+        found_domains = set()
 
         with open(
                 ioc, 'r', encoding="utf-8") as file:
             for line in file:
-                ip_addresses = constants.IP_PATTERN.findall(line)
-                for ip_address in ip_addresses:
-                    ip_object = ipaddress.ip_address(ip_address)
-                    if not (ip_object.is_private or ip_object.is_loopback or ip_object.is_reserved):
-                        valid_ip_list.add(str(ip_object))
 
-        for public_ip in valid_ip_list:
-            public_ip_endpoint = f"{constants.BASE_URL}{constants.IP_ADDRESS_ENDPOINT}{public_ip}"
-            ips_data = utils.get_virustotal_report(
-                public_ip_endpoint)
-            utils.print_ioc_summary(
-                "Public IP", public_ip, ips_data)
+                # Refang found IoC first
+                # Otherwise it will not read defanged IoCs in a log file
+                clean_line = utils.refang_ioc(line)
+
+                for match in constants.HASH_PATTERN.findall(line):
+                    found_iocs.add(("File hash", match))
+                for match in constants.URL_PATTERN.findall(clean_line):
+                    found_iocs.add(("URL", match))
+                for match in constants.IP_PATTERN.findall(clean_line):
+                    found_iocs.add(("Public IP", match))
+                for match in constants.DOMAIN_PATTERN.findall(clean_line):
+                    found_domains.add(match)
+
+        urls = {indicator for ioc_type,
+                indicator in found_iocs if ioc_type == "URL"}
+
+        for domain in found_domains:
+            if any(domain in url for url in urls):
+                continue  # Skip domain if already in found URL
+            found_iocs.add(("Domain", domain))
+
+        # Send API request for each unique IoC
+        for ioc_type, indicator in found_iocs:
+            utils.process_single_ioc(ioc_type, indicator)
 
     else:
         print("Invalid input, try again.")
@@ -73,5 +70,3 @@ def check_reputation(ioc: str):
 
 if __name__ == '__main__':
     check_reputation()  # noqa: E1120
-
-# TODO: add logic for parsing any kind of ioc

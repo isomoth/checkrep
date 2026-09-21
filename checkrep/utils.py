@@ -8,14 +8,21 @@ def refang_ioc(ioc: str) -> str:
     return ioc.replace('[', '').replace(']', '')
 
 
-def get_virustotal_report(endpoint_url: str) -> dict:
-    """Send GET request to Virus Total API and return parsed JSON response"""
+def get_virustotal_report(endpoint_url: str) -> dict | None:
+    """Send GET request to Virus Total API and return parsed JSON response
+
+    Returns None if resource not found (HTTP 404)
+    """
 
     headers = {
         "accept": "application/json",
         "x-apikey": constants.API_KEY
     }
-    response = requests.get(endpoint_url, headers=headers)
+    response = requests.get(endpoint_url, headers=headers, timeout=1)
+
+    if response.status_code == 404:
+        return None
+
     response.raise_for_status()  # HTTP error if status is 4xx or 5xx
     return response.json()
 
@@ -55,5 +62,17 @@ def process_single_ioc(ioc_type: str, raw_ioc: str):
         endpoint = f"{constants.BASE_URL}{constants.DOMAIN_ENDPOINT}{raw_ioc}"
         display_ioc = raw_ioc
 
-    data = get_virustotal_report(endpoint)
-    print_ioc_summary(ioc_type, display_ioc, data)
+    try:
+        data = get_virustotal_report(endpoint)
+        if data is None:
+            print(
+                f"{ioc_type} '{display_ioc}' not found in VirusTotal.")
+            return
+
+        print_ioc_summary(ioc_type, display_ioc, data)
+
+    except requests.exceptions.HTTPError as err:
+        print(
+            f"Error fetching VirusTotal report for {display_ioc}: {err.response.status_code} - {err.response.reason}")
+    except requests.exceptions.RequestException:
+        print("Network error while reaching VirusTotal API")

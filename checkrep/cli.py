@@ -13,7 +13,7 @@ load_dotenv()
 
 
 @click.command()
-@click.option('--ioc', prompt='Enter a defanged IP address or log file path')
+@click.option('--ioc', prompt='Enter a defanged IP address, URL, domain, file hash or log file path')
 def check_reputation(ioc: str):
     """Basic reputation checker for URL, IP, hashes, domains and log files."""
 

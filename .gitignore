@@ -8,6 +8,8 @@ venv
 *.egg-info
 .DS_Store
 .env
-sample_defender_log.txt
+Flagged_Hash_List.csv
+sample_defender_log_test_status400.json
 sample_network_log.txt
-sample_defender_log.json
+sample_syslog_log_combined_input.syslog
+sample_windows_security_log.xml

@@ -18,7 +18,7 @@ def get_virustotal_report(endpoint_url: str) -> dict | None:
         "accept": "application/json",
         "x-apikey": constants.API_KEY
     }
-    response = requests.get(endpoint_url, headers=headers, timeout=1)
+    response = requests.get(endpoint_url, headers=headers, timeout=5)
 
     if response.status_code == 404:
         return None
@@ -73,6 +73,6 @@ def process_single_ioc(ioc_type: str, raw_ioc: str):
 
     except requests.exceptions.HTTPError as err:
         print(
-            f"Error fetching VirusTotal report for {display_ioc}: {err.response.status_code} - {err.response.reason}")
+            f"Error fetching VirusTotal report for {display_ioc}: Invalid IoC. Status {err.response.status_code} - {err.response.reason}")
     except requests.exceptions.RequestException:
         print("Network error while reaching VirusTotal API")

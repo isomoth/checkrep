@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import base64
 import constants
 import utils
+import sys
+import pathlib
 
 load_dotenv()
 
@@ -29,14 +31,26 @@ def check_reputation(ioc: str):
     elif constants.DOMAIN_PATTERN.fullmatch(refanged_ioc):
         utils.process_single_ioc("Domain", refanged_ioc)
 
-    # Process input as log file
-    elif constants.FILE_PATH_PATTERN.fullmatch(ioc):
-        # Avoid duplicated API requests for URL/domains by storing IoCs as (type, indicator) tuples
+    # Check if input is a valid file existing on disk
+    elif os.path.isfile(ioc):
+        extension = pathlib.Path(ioc).suffix.lower()
+
+        if extension not in constants.ALLOWED_EXTENSIONS:
+            allowed_str = ", ".join([ext.lstrip(".")
+                                    for ext in constants.ALLOWED_EXTENSIONS])
+            print(
+                f"Invalid file format: '{extension}'. Only {allowed_str} files are supported."
+            )
+            return
+
+     # Process as log file
+     # Avoid duplicated API requests for URL/domains by storing IoCs as (type, indicator) tuples
         found_iocs = set()
         found_domains = set()
 
         with open(
                 ioc, 'r', encoding="utf-8") as file:
+
             for line in file:
 
                 # Refang found IoC first
@@ -64,6 +78,12 @@ def check_reputation(ioc: str):
         for ioc_type, indicator in found_iocs:
             utils.process_single_ioc(ioc_type, indicator)
 
+        # Catch invalid single IoCs or non-existent files with file extensions
+    elif "." in ioc and not any(ioc.endswith(extension) for extension in constants.ALLOWED_EXTENSIONS):
+        # For input like "nonexistent_file.php" or "test.php"
+        allowed_str = ", ".join([ext.lstrip(".")
+                                for ext in constants.ALLOWED_EXTENSIONS])
+        print(f"Invalid file format. Only {allowed_str} are allowed")
     else:
         print("Invalid input, try again.")
 

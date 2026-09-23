@@ -2,6 +2,7 @@ import requests
 import constants
 import ipaddress
 import base64
+import click
 
 
 def refang_ioc(ioc: str) -> str:
@@ -32,7 +33,41 @@ def print_ioc_summary(ioc_type: str, ioc_value: str, vt_data: dict) -> None:
     stats = vt_data['data']['attributes']['last_analysis_stats']
     malicious = stats.get('malicious', 0)
     suspicious = stats.get('suspicious', 0)
-    print(f"{ioc_type} {ioc_value} was reported as malicious by {malicious} vendors and suspicious by {suspicious} vendors")
+    harmless = stats.get("harmless", 0) + stats.get("undetected", 0)
+
+    # Apply colors to output dynamically
+    if malicious > 0:
+        malicious_str = click.style(str(malicious), fg="red", bold=True)
+        suspicious_str = (
+            click.style(str(suspicious), fg="yellow", bold=True)
+            if suspicious > 0
+            else str(suspicious)
+        )
+        clean_str = (
+            click.style(str(harmless), fg="green", bold=True)
+            if harmless > 0
+            else str(harmless)
+        )
+        status = click.style("[MALICIOUS]", fg="red", bold=True)
+        click.echo(
+            f"{status} {ioc_type} {ioc_value} - Malicious: {malicious_str} | Suspicious: {suspicious_str} | Clean: {clean_str}"
+        )
+
+    elif suspicious > 0:
+        suspicious_str = click.style(
+            str(suspicious), fg="yellow", bold=True)
+        status = click.style("[SUSPICIOUS]", fg="yellow", bold=True)
+        click.echo(
+            f"{status} {ioc_type} {ioc_value} - Malicious: 0 | Suspicious: {suspicious_str} | Clean: {harmless}"
+        )
+
+    else:
+        status = click.style("[CLEAN]", fg="green", bold=True)
+        clean_str_single_report = click.style(
+            f"0 malicious / 0 suspicious", fg="green")
+        click.echo(
+            f"{status} {ioc_type} {ioc_value} is clean ({clean_str_single_report}, {harmless} clean/undetected vendors)"
+        )
 
 
 def process_single_ioc(ioc_type: str, raw_ioc: str):

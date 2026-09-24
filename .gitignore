@@ -8,6 +8,7 @@ venv
 *.egg-info
 .DS_Store
 .env
+/build
 Flagged_Hash_List.csv
 sample_defender_log_test_status400.json
 sample_network_log.txt

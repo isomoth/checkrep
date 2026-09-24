@@ -17,6 +17,11 @@ dependencies = [
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[dependency-groups]
+dev = [
+    "ruff>=0.16.9",
+]
+
 [project.urls]
 Homepage = "https://github.com/isomoth/checkrep"
 Changelog = "https://github.com/isomoth/checkrep/releases"
@@ -24,7 +29,7 @@ Issues = "https://github.com/isomoth/checkrep/issues"
 CI = "https://github.com/isomoth/checkrep/actions"
 
 [project.scripts]
-checkrep = "checkrep.cli:cli"
+checkrep = "checkrep.cli:check_reputation"
 
 [project.optional-dependencies]
 test = ["pytest"]

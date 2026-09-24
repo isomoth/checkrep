@@ -1,4 +1,4 @@
-from .cli import is_ip_malicious
+from .cli import check_reputation
 
 if __name__ == "__main__":
-    is_ip_malicious()
+    check_reputation()

@@ -1,12 +1,8 @@
 # checkrep
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/isomoth/checkrep/blob/master/LICENSE)
+A Proof of Concept CLI tool to check the reputation of indicators of compromise (IP addresses, hashes, URLs and domains) as a single string, or parsed from a raw log. The application aims to partially automate external IoC sweeps. Currently, it fetches data from VirusTotal API and presents a simplified summary of the IoC report.
 
-A CLI tool to check the reputation of indicators of compromise (IP addresses, hashes, URLs and domains) as a single string, or parsed from a raw log.
-
-Based on feedback and advice from Volvo SOC analysts from different levels, the application is a Proof of Concept for the partial automation of external IoC sweeps.
-
-Currently, it fetches data from VirusTotal API and presents a simplified summary of the IoC report.
+The application was developed in collaboration with Volvo SOC analysts, who kindly shared their experience with IoC sweeps and automation, and gave me feedback including tips for future enhancements. More information about the project (in Swedish) can be found on [projektdokumentation](projektdokumentation.md).
 
 ## Requirements
 

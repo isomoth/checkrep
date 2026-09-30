@@ -4,7 +4,6 @@ version = "0.1"
 description = "Check reputation for indicators of compromise"
 readme = "README.md"
 authors = [{name = "Isabel González"}]
-license = "Apache-2.0"
 requires-python = ">=3.10"
 classifiers = []
 dependencies = [
